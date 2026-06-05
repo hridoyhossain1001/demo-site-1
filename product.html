@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details — AeroChronos</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Buykori AdSync Tracker SDK -->
+  <script src="config.js"></script>
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.capi)return;n=f.capi=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._capi)f._capi=n;n.push=n;n.loaded=!0;n.version='1.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    BUYKORI_CONFIG.gatewayUrl + '/t.js?key=' + BUYKORI_CONFIG.apiKey);
+  </script>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">AEROCHRONOS</a>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link active">Shop</a>
+        <a href="checkout.html" class="nav-link">Checkout</a>
+      </nav>
+      <div class="cart-icon">
+        <a href="checkout.html">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-badge" id="cart-count">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="product-detail-container" id="product-detail">
+      <!-- Dynamically Populated -->
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 AeroChronos Store. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Products dataset
+    const products = {
+      1: {
+        id: 1,
+        name: 'AeroChronos Smartwatch X',
+        price: 15000,
+        category: 'Smart Wearables',
+        desc: 'Minimalist luxury smart wearable featuring glowing micro-neon displays, comprehensive biometrics, and 14-day battery life. Engineered for elite athletic performance and timeless elegance.',
+        img: 'assets/smart_watch.png'
+      },
+      2: {
+        id: 2,
+        name: 'AcousticMax Headphones Pro',
+        price: 9500,
+        category: 'Audio Experience',
+        desc: 'Advanced noise-canceling headphones with customized matte finishes, ultra-comfortable acoustics, and deep bass performance. Features spatial audio driver tuning for studio-quality immersion.',
+        img: 'assets/headphones.png'
+      }
+    };
+
+    // Parse URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = parseInt(urlParams.get('id')) || 1;
+    const product = products[productId];
+
+    function updateCartBadge() {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      let count = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('cart-count').innerText = count;
+    }
+
+    function renderProduct() {
+      if (!product) {
+        document.getElementById('product-detail').innerHTML = `<p style="text-align: center; font-size: 1.2rem;">Product not found.</p>`;
+        return;
+      }
+
+      document.getElementById('product-detail').innerHTML = `
+        <div class="detail-img-card">
+          <img src="${product.img}" alt="${product.name}">
+        </div>
+        <div class="detail-info">
+          <span class="product-category">${product.category}</span>
+          <h1 class="detail-title">${product.name}</h1>
+          <span class="detail-price">${product.price.toLocaleString()} BDT</span>
+          <p class="detail-desc">${product.desc}</p>
+          
+          <div class="detail-actions">
+            <div class="quantity-selector">
+              <button class="qty-btn" onclick="changeQty(-1)">-</button>
+              <input type="text" id="qty-input" class="qty-input" value="1" readonly>
+              <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+            <button class="btn" style="flex-grow: 1;" onclick="triggerAddToCart()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      `;
+
+      // TRACK VIEW CONTENT EVENT ON LOAD
+      if (window.capi) {
+        capi('track', 'ViewContent', {
+          value: product.price,
+          currency: 'BDT',
+          content_ids: [String(product.id)],
+          content_type: 'product',
+          content_name: product.name
+        });
+      }
+    }
+
+    function changeQty(amount) {
+      let input = document.getElementById('qty-input');
+      let val = parseInt(input.value) + amount;
+      if (val >= 1) {
+        input.value = val;
+      }
+    }
+
+    function triggerAddToCart() {
+      let qty = parseInt(document.getElementById('qty-input').value) || 1;
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      let item = cart.find(i => i.id === product.id);
+
+      if (item) {
+        item.qty += qty;
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          img: product.img,
+          qty: qty
+        });
+      }
+
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartBadge();
+
+      // TRACK ADD TO CART
+      if (window.capi) {
+        capi('track', 'AddToCart', {
+          value: product.price * qty,
+          currency: 'BDT',
+          content_ids: [String(product.id)],
+          content_type: 'product',
+          num_items: qty
+        });
+      }
+
+      alert(qty + ' ' + product.name + '(s) added to cart!');
+    }
+
+    renderProduct();
+    updateCartBadge();
+  </script>
+</body>
+</html>

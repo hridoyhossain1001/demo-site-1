@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You for Your Order — AeroChronos</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Buykori AdSync Tracker SDK -->
+  <script src="config.js"></script>
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.capi)return;n=f.capi=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._capi)f._capi=n;n.push=n;n.loaded=!0;n.version='1.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    BUYKORI_CONFIG.gatewayUrl + '/t.js?key=' + BUYKORI_CONFIG.apiKey);
+  </script>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">AEROCHRONOS</a>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">Shop</a>
+        <a href="checkout.html" class="nav-link">Checkout</a>
+      </nav>
+      <div class="cart-icon">
+        <a href="checkout.html">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-badge" id="cart-count">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="success-container">
+      <div class="success-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+      
+      <h1 class="success-title">Order Confirmed!</h1>
+      <p class="success-message">Thank you for your purchase. Your order has been received and is being processed.</p>
+      
+      <div class="order-details-box" id="order-receipt">
+        <!-- Dynamically populated from localStorage -->
+      </div>
+      
+      <a href="index.html" class="btn" style="padding: 0.9rem 2.5rem;">
+        Continue Shopping
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 AeroChronos Store. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Load last order details
+    let lastOrder = JSON.parse(localStorage.getItem('lastOrder') || '{}');
+    
+    if (lastOrder && lastOrder.orderId) {
+      document.getElementById('order-receipt').innerHTML = `
+        <div class="order-detail-row">
+          <span>Order ID:</span>
+          <span style="font-weight: 600; color: var(--accent-cyan);">${lastOrder.orderId}</span>
+        </div>
+        <div class="order-detail-row">
+          <span>Email Address:</span>
+          <span>${lastOrder.email}</span>
+        </div>
+        <div class="order-detail-row">
+          <span>Items Purchased:</span>
+          <span>${lastOrder.items.reduce((sum, item) => sum + item.qty, 0)} items</span>
+        </div>
+        <div class="order-detail-row" style="margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 1rem;">
+          <span>Grand Total:</span>
+          <span style="color: white; font-size: 1.2rem;">${lastOrder.total.toLocaleString()} BDT</span>
+        </div>
+      `;
+    } else {
+      document.getElementById('order-receipt').innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No active order details found.</p>`;
+    }
+
+    // Keep nav badge updated
+    document.getElementById('cart-count').innerText = '0';
+  </script>
+</body>
+</html>
