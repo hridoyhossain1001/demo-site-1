@@ -157,16 +157,31 @@
       document.getElementById('total-amount').innerText = total.toLocaleString() + ' BDT';
     }
 
-    // TRACK INITIATE CHECKOUT
-    if (cart.length > 0 && window.capi) {
+    let checkoutStarted = false;
+
+    function trackCheckoutStart() {
+      if (checkoutStarted || cart.length === 0 || !window.capi) return;
+
+      let cartKey = cart.map(item => item.id + ':' + item.qty).sort().join('|');
+      let storageKey = 'buykori_checkout_started:' + cartKey;
+      if (sessionStorage.getItem(storageKey)) {
+        checkoutStarted = true;
+        return;
+      }
+
+      let checkoutId = crypto.randomUUID();
+      sessionStorage.setItem(storageKey, checkoutId);
+      checkoutStarted = true;
       capi('track', 'InitiateCheckout', {
         value: total,
         currency: 'BDT',
         content_ids: cart.map(item => String(item.id)),
         content_type: 'product',
         num_items: cart.reduce((sum, item) => sum + item.qty, 0)
-      });
+      }, { eventId: 'checkout:' + checkoutId });
     }
+
+    document.getElementById('checkout-form').addEventListener('input', trackCheckoutStart, { once: true });
 
     function processPurchase(e) {
       e.preventDefault();
@@ -204,7 +219,7 @@
           content_type: 'product',
           order_id: orderId,
           num_items: cart.reduce((sum, item) => sum + item.qty, 0)
-        });
+        }, { eventId: orderId });
 
         // Store order summary for thankyou.html
         let orderDetails = {
